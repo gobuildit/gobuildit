@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package payload;
+
+message Movie {
+    string title = 1;
+    Person director = 2;
+    repeated Person cast = 3;
+    string release = 4;
+}
+
+message Person {
+    string first_name = 1;
+    string last_name = 2;
+}
