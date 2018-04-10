@@ -16,6 +16,11 @@ const (
 )
 
 var (
+	// For synchronization of counters, the atomic package offers many helpful
+	// functions. Typically, something like atomic.AddInt64 might be a better
+	// choice for synchronized counters, but for the sake of demonstrating some
+	// pifalls of locking, a mutex is used for synchronization instead.
+	// See: https://golang.org/pkg/sync/atomic/
 	mu    sync.Mutex
 	count int
 )
