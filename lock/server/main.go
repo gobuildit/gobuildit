@@ -3,8 +3,16 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
-	"time"
+)
+
+const (
+	// payloadBytes is the number of bytes written back to the client. The value
+	// ensures all writes to a client socket fill the TCP buffer. The TCP buffer
+	// size is controlled by kernel configuration. To learn more about the TCP
+	// configuration, see: http://fasterdata.es.net/host-tuning/
+	payloadBytes = 1024 * 1024
 )
 
 var (
@@ -27,16 +35,11 @@ func root(w http.ResponseWriter, r *http.Request) {
 
 	count++
 
-	// Simulate a slow client based on the presence of a query parameter.
-	if _, ok := r.URL.Query()["slow"]; ok {
-		time.Sleep(10 * time.Second)
-	}
-
-	msg := fmt.Sprintf("Count = %d", current)
-	w.Write([]byte(msg))
+	msg := []byte(strings.Repeat(fmt.Sprintf("%d", count), payloadBytes))
+	w.Write(msg)
 }
 
-// GOOD: This version of root holds the lock for as short as possible,
+// GOOD: This version of root holds the lock as shortly as possible,
 // incrementing count and storing a copy of the current count value, before
 // releasing the lock. If a client is slow to read, the handler may still be
 // invoked a second time without creating any lock contention.
@@ -47,12 +50,7 @@ func root(w http.ResponseWriter, r *http.Request) {
 	current := count
 	mu.Unlock()
 
-	// Simulate a slow client based on the presence of a query parameter.
-	if _, ok := r.URL.Query()["slow"]; ok {
-		time.Sleep(10 * time.Second)
-	}
-
-	msg := fmt.Sprintf("Count = %d", current)
+	msg := []byte(strings.Repeat(fmt.Sprintf("%d", current), payloadBytes))
 	w.Write([]byte(msg))
 }
 */
