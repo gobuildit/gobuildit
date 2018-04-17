@@ -35,6 +35,7 @@ import (
 )
 
 const (
+	buildSHA        = "dev"
 	readingListJSON = "https://raw.githubusercontent.com/enocom/gopher-reading-list/master/README.json"
 )
 
@@ -44,10 +45,13 @@ func init() {
 
 func main() {
 	log.Println("Starting Twitter bot")
+
 	conf, err := loadConfig()
 	if err != nil {
 		log.Fatalf("failed to load config from environment: %s", err)
 	}
+
+	go startHealthServer()
 
 	links, err := getLinks(readingListJSON)
 	if err != nil {
@@ -117,6 +121,18 @@ func loadConfig() (config, error) {
 		frequency:      frequency,
 	}
 	return c, nil
+}
+
+func startHealthServer() {
+	http.HandleFunc("/", root)
+	if err := http.ListenAndServe(":80", nil); err != nil {
+		log.Fatalf("failed to start HTTP server: %s", err)
+	}
+}
+
+func root(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json; charset=utf-8")
+	w.Write([]byte(fmt.Sprintf(`{"version":""}`, buildSHA)))
 }
 
 // getLinks assumes a JSON response with the following format:
