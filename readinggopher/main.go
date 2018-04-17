@@ -95,9 +95,11 @@ func loadConfig() (config, error) {
 	if tokenSecret == "" {
 		missing = append(missing, "TOKEN_SECRET")
 	}
-	frequency, err := time.ParseDuration(os.Getenv("FREQUENCY"))
+	f := os.Getenv("FREQUENCY")
+	frequency, err := time.ParseDuration(f)
 	if err != nil {
-		missing = append(missing, "FREQUENCY")
+		log.Printf("failed to parse FREQUENCY = %s; defaulting to 24h", f)
+		frequency = 24 * time.Hour
 	}
 	if len(missing) > 0 {
 		err := fmt.Errorf(
