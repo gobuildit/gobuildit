@@ -65,48 +65,6 @@ func main() {
 	}
 }
 
-// getLinks assumes a JSON response with the following format:
-// {
-//    "gopherReadingList": [{
-//       "title": "Some blog post title",
-//       "url": "https://www.example.com",
-//    }]
-// }
-func getLinks(u string) ([]link, error) {
-	resp, err := http.Get(u)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if want := resp.StatusCode; want != http.StatusOK {
-		return nil, fmt.Errorf("want %d, got %d", want, http.StatusOK)
-	}
-
-	var r responseJSON
-	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return nil, err
-	}
-	return r.links(), nil
-}
-
-// responseJSON represents the JSON format of the Gopher Reading List.
-type responseJSON map[string][]link
-
-func (r responseJSON) links() []link {
-	return r["gopherReadingList"]
-}
-
-// link holds data to identify a notable blog post on Go.
-type link struct {
-	URL   string `json:"url"`
-	Title string `json:"title"`
-}
-
-func (l link) String() string {
-	return fmt.Sprintf("\"%s\" %s", l.Title, l.URL)
-}
-
 // config holds all the required information to run the readinggopher binary.
 type config struct {
 	baseURL        string
@@ -157,6 +115,48 @@ func loadConfig() (config, error) {
 		frequency:      frequency,
 	}
 	return c, nil
+}
+
+// getLinks assumes a JSON response with the following format:
+// {
+//    "gopherReadingList": [{
+//       "title": "Some blog post title",
+//       "url": "https://www.example.com",
+//    }]
+// }
+func getLinks(u string) ([]link, error) {
+	resp, err := http.Get(u)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if want := resp.StatusCode; want != http.StatusOK {
+		return nil, fmt.Errorf("want %d, got %d", want, http.StatusOK)
+	}
+
+	var r responseJSON
+	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
+		return nil, err
+	}
+	return r.links(), nil
+}
+
+// responseJSON represents the JSON format of the Gopher Reading List.
+type responseJSON map[string][]link
+
+func (r responseJSON) links() []link {
+	return r["gopherReadingList"]
+}
+
+// link holds data to identify a notable blog post on Go.
+type link struct {
+	URL   string `json:"url"`
+	Title string `json:"title"`
+}
+
+func (l link) String() string {
+	return fmt.Sprintf("\"%s\" %s", l.Title, l.URL)
 }
 
 // tweet represents a published link.
@@ -210,7 +210,7 @@ func postTweet(c config, msg string) (tweet, error) {
 			return tweet{}, fmt.Errorf("Tweet failed. Status = %d, Body = (failed to read)", resp.StatusCode)
 
 		}
-		return tweet{}, fmt.Errorf("Tweet failed. Status = %d, Body = %s", resp.StatusCode, body)
+		return tweet{}, fmt.Errorf("Tweet failed. Status = %d, Body = %s", resp.StatusCode, string(body))
 	}
 	var t tweet
 	if err := json.NewDecoder(resp.Body).Decode(&t); err != nil {
