@@ -1,1 +1,3 @@
 VERSION
+.envrc
+deploy.sh
