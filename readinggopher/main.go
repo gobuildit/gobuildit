@@ -34,10 +34,9 @@ import (
 	"time"
 )
 
-const (
-	buildSHA        = "dev"
-	readingListJSON = "https://raw.githubusercontent.com/enocom/gopher-reading-list/master/README.json"
-)
+const readingListJSON = "https://raw.githubusercontent.com/enocom/gopher-reading-list/master/README.json"
+
+var buildSHA string // set by build
 
 func init() {
 	rand.Seed(time.Now().Unix())
@@ -132,7 +131,7 @@ func startHealthServer() {
 
 func root(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json; charset=utf-8")
-	w.Write([]byte(fmt.Sprintf(`{"version":""}`, buildSHA)))
+	w.Write([]byte(fmt.Sprintf(`{"version":"%s"}`, buildSHA)))
 }
 
 // getLinks assumes a JSON response with the following format:
