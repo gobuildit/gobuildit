@@ -7,4 +7,4 @@ FROM alpine
 WORKDIR /readinggopher
 COPY --from=build-env /go/src/readinggopher/bot .
 RUN apk --update add openssl ca-certificates
-CMD ["./bot"]
+ENTRYPOINT ["./bot"]
